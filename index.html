@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Day: Badlands · Wind Cave · Custer State Park — Scenic Guide</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#0e1210; --panel:#151c19; --panel2:#1b241f; --line:#2a3630;
+    --ink:#eef2ee; --mut:#9db0a4; --gold:#e0a94a; --rust:#c8703c;
+    --sky:#6fb7c4; --green:#7fa86a; --shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--gold);text-decoration:none}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+  /* HERO */
+  .hero{position:relative;min-height:64vh;display:flex;align-items:flex-end;
+    background:linear-gradient(180deg,rgba(10,14,12,.15),rgba(10,14,12,.92)),
+    url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Big_Badlands_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg/1280px-Big_Badlands_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg') center 40%/cover no-repeat;
+    border-bottom:1px solid var(--line)}
+  .hero .wrap{padding-bottom:38px;padding-top:38px}
+  .kick{letter-spacing:.28em;text-transform:uppercase;font-size:.72rem;color:var(--gold);font-weight:700}
+  .hero h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.05;margin:.35em 0 .3em;font-weight:800;
+    text-shadow:0 2px 20px rgba(0,0,0,.6)}
+  .hero p{max-width:640px;color:#e7ede8;font-size:1.05rem;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .badge{background:rgba(0,0,0,.45);border:1px solid var(--line);border-radius:999px;
+    padding:7px 15px;font-size:.82rem;color:var(--ink);backdrop-filter:blur(4px)}
+  .badge b{color:var(--gold)}
+
+  /* SECTION */
+  section{padding:46px 0}
+  .shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .shead h2{font-size:1.7rem;font-weight:800}
+  .shead span{color:var(--mut);font-size:.95rem}
+  .lead{color:var(--mut);max-width:760px;margin-bottom:8px}
+
+  /* MAP */
+  #map{height:460px;border-radius:16px;border:1px solid var(--line);box-shadow:var(--shadow);z-index:1}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;font-size:.86rem;color:var(--mut)}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:2px solid #0007}
+
+  /* ROUTE OPTIONS */
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .opt{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+  .opt.reco{border-color:var(--gold)}
+  .opt h3{font-size:1.15rem;margin-bottom:6px}
+  .opt .tag{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;font-weight:700;
+    color:#20160a;background:var(--gold);padding:3px 9px;border-radius:6px;display:inline-block;margin-bottom:10px}
+  .opt .tag.alt{background:var(--panel2);color:var(--mut);border:1px solid var(--line)}
+  .opt ol{margin:10px 0 0 18px;color:var(--mut);font-size:.92rem}
+  .opt ol li{margin:3px 0}
+  .opt .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.88rem;color:var(--ink)}
+
+  /* AREA GROUPS */
+  .area-h{display:flex;align-items:center;gap:12px;margin:38px 0 4px}
+  .area-h .dot{width:12px;height:12px;border-radius:50%}
+  .area-h h3{font-size:1.35rem;font-weight:800}
+  .area-h .sub{color:var(--mut);font-size:.9rem;margin-left:auto}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .18s,border-color .18s}
+  .card:hover{transform:translateY(-4px);border-color:var(--gold)}
+  .card .ph{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0a0d0b}
+  .card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .n{position:absolute;top:10px;left:10px;background:var(--gold);color:#20160a;font-weight:800;
+    width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.5);font-size:.95rem}
+  .card .time{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;
+    font-size:.75rem;padding:4px 10px;border-radius:999px;backdrop-filter:blur(3px)}
+  .card .body{padding:16px 16px 18px;display:flex;flex-direction:column;flex:1}
+  .card .body h4{font-size:1.08rem;margin-bottom:6px}
+  .card .body p{color:var(--mut);font-size:.9rem;flex:1}
+  .card .tip{margin-top:12px;font-size:.82rem;color:var(--ink);background:var(--panel2);
+    border-left:3px solid var(--gold);padding:8px 11px;border-radius:0 8px 8px 0}
+  .card .meta{display:flex;gap:14px;margin-top:12px;font-size:.78rem;color:var(--mut);flex-wrap:wrap}
+  .card .meta a{color:var(--sky)}
+
+  /* BYWAYS */
+  .byways{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .byway{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+  .byway h3{font-size:1.2rem;color:var(--gold)}
+  .byway .r{color:var(--mut);font-size:.8rem;margin:4px 0 10px}
+  .byway p{font-size:.92rem;color:var(--ink)}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--mut);font-size:.85rem}
+  footer a{color:var(--sky)}
+
+  @media(max-width:760px){
+    .opts,.byways{grid-template-columns:1fr}
+    #map{height:380px}
+    .hero{min-height:56vh}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kick">South Dakota · One Perfect Day</div>
+    <h1>Badlands · Wind Cave · Custer State Park</h1>
+    <p>A visual, map-first guide to the top scenery you can chain together in a single long day of driving — spires, granite needles, bison herds, and the Black Hills byways.</p>
+    <div class="badges">
+      <div class="badge"><b>16</b> scenic stops</div>
+      <div class="badge"><b>2</b> legendary byways</div>
+      <div class="badge"><b>~6 hrs</b> driving</div>
+      <div class="badge"><b>3</b> parks + Rushmore</div>
+    </div>
+  </div>
+</header>
+
+<section id="map-sec">
+  <div class="wrap">
+    <div class="shead"><h2>The Map</h2><span>every stop, colour-coded by area · click a pin</span></div>
+    <p class="lead">Badlands sits about an hour east of the Black Hills cluster — that eastern leg is the big drive of the day. Everything else forms a tight figure-eight loop around Custer &amp; Wind Cave.</p>
+    <div id="map"></div>
+    <div class="legend">
+      <span><i style="background:var(--rust)"></i>Badlands NP</span>
+      <span><i style="background:var(--gold)"></i>Rushmore &amp; Iron Mountain Rd</span>
+      <span><i style="background:var(--green)"></i>Custer State Park &amp; Needles Hwy</span>
+      <span><i style="background:var(--sky)"></i>Wind Cave NP</span>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--panel)">
+  <div class="wrap">
+    <div class="shead"><h2>Two Ways To Run The Day</h2><span>pick based on how early you'll start</span></div>
+    <div class="opts">
+      <div class="opt reco">
+        <span class="tag">Recommended</span>
+        <h3>A · Badlands sunrise, then loop the Hills</h3>
+        <ol>
+          <li>Pre-dawn drive to Badlands (~1 hr from Rapid City)</li>
+          <li>Badlands sunrise: Big Badlands → Notch → Panorama → Yellow Mounds → Pinnacles</li>
+          <li>Drive west ~1.5 hr toward Keystone</li>
+          <li>Mount Rushmore (late morning — faces well lit)</li>
+          <li>Iron Mountain Rd southbound (tunnels frame Rushmore)</li>
+          <li>Custer: Wildlife Loop bison → Sylvan Lake → Needles Hwy</li>
+          <li>Wind Cave prairie &amp; Rankin Ridge (late afternoon)</li>
+        </ol>
+        <div class="foot">≈ 5.5–6.5 hrs driving + stops = a full 12–14 hr day. Low light makes Badlands most dramatic and beats the heat.</div>
+      </div>
+      <div class="opt">
+        <span class="tag alt">Tighter</span>
+        <h3>B · Skip Badlands, savour the Black Hills</h3>
+        <ol>
+          <li>Mount Rushmore</li>
+          <li>Iron Mountain Road</li>
+          <li>Wildlife Loop (bison)</li>
+          <li>Sylvan Lake</li>
+          <li>Needles Highway (Needles Eye, Cathedral Spires)</li>
+          <li>Wind Cave NP</li>
+        </ol>
+        <div class="foot">A relaxed ~3.5–4 hr driving loop. Badlands becomes its own half-day trip another time — no rushing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="shead"><h2>The Stops</h2><span>in driving order · tap any photo pin on the map</span></div>
+    <div id="stops"></div>
+  </div>
+</section>
+
+<section style="background:var(--panel)">
+  <div class="wrap">
+    <div class="shead"><h2>The Two Byways To Prioritise</h2><span>the scenic heart of the day</span></div>
+    <div class="byways">
+      <div class="byway">
+        <h3>Needles Highway · SD-87</h3>
+        <div class="r">14 miles · no large RVs · slow-going</div>
+        <p>Threads through towering granite "needle" spires with hairpin turns and the tight Needles Eye Tunnel (~8'9" wide), ending at postcard Sylvan Lake. The single most spectacular short drive in the region.</p>
+      </div>
+      <div class="byway">
+        <h3>Iron Mountain Road · US-16A</h3>
+        <div class="r">~17 miles · drive north→south</div>
+        <p>Tunnels deliberately cut to <em>frame Mount Rushmore</em> as you emerge, plus corkscrew "pigtail" bridges and 314° switchbacks. North-to-south gives the best Rushmore reveals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Built as a one-day scenery guide for Badlands NP, Wind Cave NP &amp; Custer State Park, South Dakota. Photos via <a href="https://commons.wikimedia.org">Wikimedia Commons</a> · map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &amp; CARTO. Coordinates are approximate — confirm pullouts on a live map; bison move.</p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const AREA = {
+  badlands:{name:"Badlands NP",color:"#c8703c"},
+  rushmore:{name:"Rushmore & Iron Mountain Rd",color:"#e0a94a"},
+  custer:{name:"Custer State Park & Needles Hwy",color:"#7fa86a"},
+  windcave:{name:"Wind Cave NP",color:"#6fb7c4"},
+};
+const STOPS = [
+ {n:1,area:"badlands",name:"Big Badlands Overlook",lat:43.8266,lng:-101.9243,time:"15–20 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Big_Badlands_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg/1280px-Big_Badlands_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg",
+  desc:"First jaw-drop of the trip — a sweeping panorama of eroded, striped spires and canyons glowing gold at low light.",
+  tip:"Best at sunrise; closest classic view to I-90 exit 131."},
+ {n:2,area:"badlands",name:"Panorama Point",lat:43.8447,lng:-101.9739,time:"10–15 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Looking_up_Badlands_Loop_Road_near_Toadstool_Rock%2C_Badlands_National_Park%2C_2009.jpg/1280px-Looking_up_Badlands_Loop_Road_near_Toadstool_Rock%2C_Badlands_National_Park%2C_2009.jpg",
+  desc:"Wide layered-butte vista; the horizontal red-tan-grey colour bands are most saturated in early or late light.",
+  tip:"Sunrise angle lights the formations from the front."},
+ {n:3,area:"badlands",name:"Yellow Mounds Overlook",lat:43.8636,lng:-102.0808,time:"10–15 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Dillon_Pass%2C_Yellow_Mounds_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg/1280px-Dillon_Pass%2C_Yellow_Mounds_Overlook%2C_Badlands_National_Park%2C_Wall%2C_SD.jpg",
+  desc:"Surreal pastel yellow-and-purple fossilised-soil mounds — unlike anything else in the park.",
+  tip:"Colours pop most under soft light or golden hour."},
+ {n:4,area:"badlands",name:"Pinnacles Overlook",lat:43.9166,lng:-102.1483,time:"15 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/MK00667-75_Badlands_Pinnacles_overlook.jpg/1280px-MK00667-75_Badlands_Pinnacles_overlook.jpg",
+  desc:"High vantage over a sea of sharp spires; one of the best places in the park to spot bighorn sheep.",
+  tip:"Great sunset spot if you flip the itinerary. Watch the rails for wildlife."},
+ {n:5,area:"badlands",name:"Door & Notch Trails",lat:43.8555,lng:-101.9310,time:"30–45 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Badlands_National_Park_-_Door%2C_Window%2C_and_Notch_Trails_Sign.jpg/1280px-Badlands_National_Park_-_Door%2C_Window%2C_and_Notch_Trails_Sign.jpg",
+  desc:"Short boardwalk and ladder trails that take you right in among the formations for an immersive walk-through-the-spires feel.",
+  tip:"Do it early before the heat. Notch Trail's ladder + ledge gives a canyon-window view."},
+ {n:6,area:"rushmore",name:"Mount Rushmore",lat:43.8791,lng:-103.4591,time:"45–60 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Dean_Franklin_-_06.04.03_Mount_Rushmore_Monument_%28by-sa%29.jpg/1280px-Dean_Franklin_-_06.04.03_Mount_Rushmore_Monument_%28by-sa%29.jpg",
+  desc:"The iconic 60-ft granite presidential faces — unmistakable and worth the stop even briefly.",
+  tip:"East-facing, so morning light hits them straight-on. Paid parking."},
+ {n:7,area:"rushmore",name:"Iron Mountain Road Tunnels",lat:43.8600,lng:-103.4160,time:"20–30 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Pigtail_bridge_on_Iron_Mountain_Road._The_bridge_leads_to_a_tunnel%2C_which_is_aligned_with_Mount_Rushmore._%28328813487%29.jpg/1280px-Pigtail_bridge_on_Iron_Mountain_Road._The_bridge_leads_to_a_tunnel%2C_which_is_aligned_with_Mount_Rushmore._%28328813487%29.jpg",
+  desc:"Engineered tunnels frame Mount Rushmore dead-centre as you emerge — a famous designed reveal, with pigtail bridges and switchbacks.",
+  tip:"Drive north-to-south for the best framing. Go slow — narrow tunnels."},
+ {n:8,area:"rushmore",name:"Norbeck Overlook",lat:43.8130,lng:-103.4090,time:"10–15 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Peter_Norbeck_Scenic_Byway_-_Black_Hills_Overlook_-_NARA_-_7721017.jpg/1280px-Peter_Norbeck_Scenic_Byway_-_Black_Hills_Overlook_-_NARA_-_7721017.jpg",
+  desc:"High panoramic look over the Black Hills forest and distant granite peaks — a perfect mid-route leg-stretch.",
+  tip:"Easy pullout; great for a quick photo and a breather."},
+ {n:9,area:"custer",name:"Wildlife Loop Road (Bison)",lat:43.7180,lng:-103.4030,time:"60–90 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Adult_bison_and_calf%2C_Custer_State_Park%2C_South_Dakota_%282009-08-25%29.jpg",
+  desc:"An 18-mile loop through open grassland where the ~1,400-head bison herd roams, plus pronghorn, 'begging burros' and prairie dogs.",
+  tip:"Early morning or dusk = most active wildlife. Stay in the car near bison."},
+ {n:10,area:"custer",name:"Custer Bison Center",lat:43.7546,lng:-103.4260,time:"20–30 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Bison_with_Calves%2C_Custer_State_Park%2C_1981_%286217630273%29.jpg/1280px-Bison_with_Calves%2C_Custer_State_Park%2C_1981_%286217630273%29.jpg",
+  desc:"Orientation point with frequent nearby herd sightings on the eastern loop — a good place to catch current herd location tips.",
+  tip:"Check here for where the herd is roaming that day."},
+ {n:11,area:"custer",name:"Sylvan Lake",lat:43.8455,lng:-103.5590,time:"45–60 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/SylvanLakeCusterStatePark.jpg/1280px-SylvanLakeCusterStatePark.jpg",
+  desc:"Postcard alpine lake ringed by giant granite boulders and pine — the park's signature scene, at the top of Needles Highway.",
+  tip:"Easy 1-mi shoreline loop; calmest reflections in the morning. Arrive early."},
+ {n:12,area:"custer",name:"Needles Eye Tunnel",lat:43.8360,lng:-103.5210,time:"20–30 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Needles_Eye_Tunnel.jpg/1280px-Needles_Eye_Tunnel.jpg",
+  desc:"Towering slender granite spires and a narrow tunnel (~8'9\" wide) squeezed right through the rock — the highlight of Needles Highway.",
+  tip:"Park at the pullout and walk to the Needle's Eye formation."},
+ {n:13,area:"custer",name:"Cathedral Spires",lat:43.8250,lng:-103.5230,time:"15 min+",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Cathedral_Spires_and_Limber_Pine_Natural_Area%2C_Needles_Highway%2C_Custer_State_Park%2C_Custer%2C_SD_-_53764704521.jpg/1280px-Cathedral_Spires_and_Limber_Pine_Natural_Area%2C_Needles_Highway%2C_Custer_State_Park%2C_Custer%2C_SD_-_53764704521.jpg",
+  desc:"A cluster of dramatic vertical granite fingers rising from the forest — one of the most photogenic spots on the highway.",
+  tip:"Golden hour warms the granite. A 3-mi round-trip hike gets you closer."},
+ {n:14,area:"custer",name:"Needles Highway Overlooks",lat:43.8490,lng:-103.5370,time:"10–15 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Needles_Highway_overlook.jpg/1280px-Needles_Highway_overlook.jpg",
+  desc:"Elevated granite viewpoints over the high Needles country toward Black Elk Peak, just south of Sylvan Lake.",
+  tip:"Several pullouts line SD-87 — stop at whichever has the clearest view."},
+ {n:15,area:"windcave",name:"Wind Cave Prairie",lat:43.5561,lng:-103.4787,time:"30–45 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Bison_and_Prairie_Dog_in_Wind_Cave_National_Park.jpg/1280px-Bison_and_Prairie_Dog_in_Wind_Cave_National_Park.jpg",
+  desc:"Rolling mixed-grass prairie meeting ponderosa pine hills — classic wide-open Great Plains scenery, with bison and prairie-dog towns above ground.",
+  tip:"The surface drive is the visual draw if you skip the cave tour."},
+ {n:16,area:"windcave",name:"Rankin Ridge Lookout",lat:43.6088,lng:-103.4266,time:"30–45 min",
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Rankin_Ridge_Fire_Tower_%2802422629-155d-4519-3e70-a1ef57867242%29.jpg/1280px-Rankin_Ridge_Fire_Tower_%2802422629-155d-4519-3e70-a1ef57867242%29.jpg",
+  desc:"The highest point in the park — a 360° view over prairie, pine ridges and the southern Black Hills from a fire tower.",
+  tip:"Easy 1-mi nature loop to the tower. Best on a clear day."},
+];
+
+// ---- MAP ----
+const map = L.map('map',{scrollWheelZoom:false}).setView([43.72,-102.7],8);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
+const bounds=[];
+STOPS.forEach(s=>{
+  const c=AREA[s.area].color;
+  const icon=L.divIcon({className:'',html:
+    `<div style="background:${c};color:#12160f;font-weight:800;width:28px;height:28px;border-radius:50%;
+     display:flex;align-items:center;justify-content:center;border:2px solid #fff;
+     box-shadow:0 2px 6px rgba(0,0,0,.6);font-size:.82rem">${s.n}</div>`,
+    iconSize:[28,28],iconAnchor:[14,14]});
+  const m=L.marker([s.lat,s.lng],{icon}).addTo(map);
+  m.bindPopup(`<div style="width:210px;font-family:sans-serif">
+     <img src="${s.img}" style="width:100%;height:110px;object-fit:cover;border-radius:6px" loading="lazy">
+     <div style="font-weight:700;margin:6px 0 2px">${s.n}. ${s.name}</div>
+     <div style="font-size:.78rem;color:#555">${AREA[s.area].name} · ${s.time}</div>
+     <div style="font-size:.8rem;margin-top:4px">${s.desc}</div>
+     <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank"
+        style="font-size:.78rem;color:#b06a20">Open in Google Maps ↗</a></div>`);
+  bounds.push([s.lat,s.lng]);
+});
+map.fitBounds(bounds,{padding:[40,40]});
+
+// ---- CARDS grouped by area ----
+const order=["badlands","rushmore","custer","windcave"];
+const subById={badlands:"Eastern leg · ~1 hr drive out",rushmore:"Transition & scenic byway",
+  custer:"The scenic heart · figure-eight loop",windcave:"Southern end · prairie & panorama"};
+const host=document.getElementById('stops');
+order.forEach(a=>{
+  const head=document.createElement('div');head.className='area-h';
+  head.innerHTML=`<span class="dot" style="background:${AREA[a].color}"></span>
+    <h3>${AREA[a].name}</h3><span class="sub">${subById[a]}</span>`;
+  host.appendChild(head);
+  const grid=document.createElement('div');grid.className='grid';
+  STOPS.filter(s=>s.area===a).forEach(s=>{
+    const card=document.createElement('div');card.className='card';
+    card.innerHTML=`
+      <div class="ph"><span class="n">${s.n}</span><span class="time">${s.time}</span>
+        <img src="${s.img}" loading="lazy" alt="${s.name}"></div>
+      <div class="body">
+        <h4>${s.name}</h4>
+        <p>${s.desc}</p>
+        <div class="tip">${s.tip}</div>
+        <div class="meta">
+          <span>${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>
+          <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank">Google Maps ↗</a>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+  host.appendChild(grid);
+});
+</script>
+</body>
+</html>
