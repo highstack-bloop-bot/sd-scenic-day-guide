@@ -127,7 +127,16 @@
       <span><i style="background:var(--gold)"></i>Rushmore &amp; Iron Mountain Rd</span>
       <span><i style="background:var(--green)"></i>Custer State Park &amp; Needles Hwy</span>
       <span><i style="background:var(--sky)"></i>Wind Cave NP</span>
+      <span><i style="background:#d16bb0"></i>★ Your Selections</span>
     </div>
+  </div>
+</section>
+
+<section id="userpicks-sec" style="background:linear-gradient(180deg,#211a24,#151c19)">
+  <div class="wrap">
+    <div class="shead"><h2>★ Your Selections</h2><span>the photos you sent me — pinned to their real spots</span></div>
+    <p class="lead">Everything you shared, placed on the map above as ★ diamond pins and shown here with where each shot was actually taken.</p>
+    <div class="grid" id="userpicks"></div>
   </div>
 </section>
 
@@ -204,7 +213,23 @@ const AREA = {
   rushmore:{name:"Rushmore & Iron Mountain Rd",color:"#e0a94a"},
   custer:{name:"Custer State Park & Needles Hwy",color:"#7fa86a"},
   windcave:{name:"Wind Cave NP",color:"#6fb7c4"},
+  user:{name:"Your Selections",color:"#d16bb0"},
 };
+// Photos you sent me — pinned to their real locations
+const USERPICKS = [
+ {u:1,name:"Sage Creek Basin",area:"Badlands NP",lat:43.7660,lng:-102.4470,
+  img:"https://images.squarespace-cdn.com/content/v1/5d83d9a0856ff60823bfe69d/1600393548516-0KXLDO34PK2E02ZRFCEK/Badlands9.JPG?format=1500w",
+  desc:"The photo you sent — the wilderness west side of Badlands, off the gravel Sage Creek Rim Road. Rolling grassland below the eroded Badlands Wall. This is the bison + prairie-dog backcountry zone.",
+  tip:"Reached via Sage Creek Rim Rd (gravel) west of the Pinnacles. Fewer crowds, best bison odds."},
+ {u:2,name:"Door / Castle Trail (grassy walk)",area:"Badlands NP",lat:43.8555,lng:-101.9280,
+  img:"user/badlands-door-trail.jpg",
+  desc:"The photo you sent — a green single-track threading right into the Badlands Wall, the eroded spires and an alcove framing the path. Classic Door/Castle Trail scene off the Loop Road near the NE entrance.",
+  tip:"Door Trail is a short boardwalk; the Castle Trail continues for a longer grassland-and-spires walk. Go early."},
+ {u:3,name:"Cathedral Spires",area:"Custer State Park",lat:43.8250,lng:-103.5230,
+  img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Cathedral_Spires_and_Limber_Pine_Natural_Area%2C_Needles_Highway%2C_Custer_State_Park%2C_Custer%2C_SD.jpg/1920px-Cathedral_Spires_and_Limber_Pine_Natural_Area%2C_Needles_Highway%2C_Custer_State_Park%2C_Custer%2C_SD.jpg",
+  desc:"The one you asked to place — jagged granite fingers off the Needles Highway (SD-87). The Cathedral Spires Trail (~1.5 mi out-and-back) gets you in among them.",
+  tip:"Trailhead is a small pullout on SD-87 just south of the Needles Eye Tunnel."},
+];
 const STOPS = [
  {n:1,area:"badlands",name:"Big Badlands Overlook",lat:43.8266,lng:-101.9243,time:"15–20 min",
   img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Badlands_Overlook_at_Sunset.jpg/1920px-Badlands_Overlook_at_Sunset.jpg",
@@ -294,7 +319,46 @@ STOPS.forEach(s=>{
         style="font-size:.78rem;color:#b06a20">Open in Google Maps ↗</a></div>`);
   bounds.push([s.lat,s.lng]);
 });
+// ---- USER PICK markers (diamond, highlighted) ----
+USERPICKS.forEach(s=>{
+  const c=AREA.user.color;
+  const icon=L.divIcon({className:'',html:
+    `<div style="background:${c};color:#fff;font-weight:800;width:30px;height:30px;
+     transform:rotate(45deg);border-radius:6px;display:flex;align-items:center;justify-content:center;
+     border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.7)">
+     <span style="transform:rotate(-45deg);font-size:.9rem">★</span></div>`,
+    iconSize:[30,30],iconAnchor:[15,15]});
+  const m=L.marker([s.lat,s.lng],{icon}).addTo(map);
+  m.bindPopup(`<div style="width:210px;font-family:sans-serif">
+     <img src="${s.img}" style="width:100%;height:110px;object-fit:cover;border-radius:6px" loading="lazy">
+     <div style="font-weight:700;margin:6px 0 2px">★ ${s.name}</div>
+     <div style="font-size:.78rem;color:#555">Your pick · ${s.area}</div>
+     <div style="font-size:.8rem;margin-top:4px">${s.desc}</div>
+     <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank"
+        style="font-size:.78rem;color:#b06a20">Open in Google Maps ↗</a></div>`);
+  bounds.push([s.lat,s.lng]);
+});
 map.fitBounds(bounds,{padding:[40,40]});
+
+// ---- USER SELECTION cards ----
+const uhost=document.getElementById('userpicks');
+USERPICKS.forEach(s=>{
+  const card=document.createElement('div');card.className='card';
+  card.innerHTML=`
+    <div class="ph"><span class="n" style="background:${AREA.user.color};color:#fff">★</span>
+      <span class="time">${s.area}</span>
+      <img src="${s.img}" loading="lazy" alt="${s.name}"></div>
+    <div class="body">
+      <h4>${s.name}</h4>
+      <p>${s.desc}</p>
+      <div class="tip" style="border-left-color:${AREA.user.color}">${s.tip}</div>
+      <div class="meta">
+        <span>${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>
+        <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank">Google Maps ↗</a>
+      </div>
+    </div>`;
+  uhost.appendChild(card);
+});
 
 // ---- CARDS grouped by area ----
 const order=["badlands","rushmore","custer","windcave"];
