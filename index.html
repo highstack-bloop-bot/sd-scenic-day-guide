@@ -83,6 +83,31 @@
   .card .meta{display:flex;gap:14px;margin-top:12px;font-size:.78rem;color:var(--mut);flex-wrap:wrap}
   .card .meta a{color:var(--sky)}
 
+  /* DAY PLAN TIMELINE */
+  .plan{margin-top:10px}
+  .leg{display:grid;grid-template-columns:82px 1fr;gap:16px;margin-bottom:14px}
+  .leg .when{font-weight:800;color:var(--gold);font-size:.98rem;text-align:right;padding-top:14px;white-space:nowrap}
+  .leg .c2{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .leg .c2 img{width:160px;height:118px;object-fit:cover;flex-shrink:0;background:#0a0d0b}
+  .leg .c2 .txt{padding:12px 15px;display:flex;flex-direction:column;justify-content:center}
+  .leg .c2 .txt h4{font-size:1.05rem;margin-bottom:3px}
+  .leg .c2 .txt .dur{font-size:.76rem;letter-spacing:.05em;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:5px}
+  .leg .c2 .txt p{color:var(--mut);font-size:.86rem}
+  .drive{display:grid;grid-template-columns:82px 1fr;gap:16px;margin-bottom:14px}
+  .drive .arrow{text-align:right;color:var(--mut);font-size:.8rem;padding-top:2px}
+  .drive .d{color:var(--mut);font-size:.86rem;border-left:2px dashed var(--line);padding:2px 0 2px 16px;margin-left:4px}
+  .drive .d b{color:var(--sky)}
+  .warn{background:linear-gradient(180deg,rgba(200,112,60,.16),rgba(200,112,60,.06));
+    border:1px solid var(--rust);border-radius:14px;padding:16px 18px;margin-top:20px;color:#f4ddd0}
+  .warn b{color:var(--gold)}
+  .warn .wt{font-weight:800;color:var(--gold);display:block;margin-bottom:4px;font-size:1rem}
+  @media(max-width:620px){
+    .leg,.drive{grid-template-columns:64px 1fr;gap:10px}
+    .leg .when{font-size:.82rem;padding-top:10px}
+    .leg .c2{flex-direction:column}
+    .leg .c2 img{width:100%;height:150px}
+  }
+
   /* BYWAYS */
   .byways{display:grid;grid-template-columns:1fr 1fr;gap:20px}
   .byway{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
@@ -113,6 +138,7 @@
       <div class="badge"><b>2</b> legendary byways</div>
       <div class="badge"><b>~6 hrs</b> driving</div>
       <div class="badge"><b>3</b> parks + Rushmore</div>
+      <div class="badge"><a href="#dayplan" style="color:var(--gold)">📋 Your timed day plan</a></div>
     </div>
   </div>
 </header>
@@ -137,6 +163,59 @@
     <div class="shead"><h2>★ Your Selections</h2><span>the photos you sent me — pinned to their real spots</span></div>
     <p class="lead">Everything you shared, placed on the map above as ★ diamond pins and shown here with where each shot was actually taken.</p>
     <div class="grid" id="userpicks"></div>
+  </div>
+</section>
+
+<section id="dayplan">
+  <div class="wrap">
+    <div class="shead"><h2>Your Day Plan</h2><span>1 PM start · Badlands → Rushmore → Devils Tower · all times Mountain</span></div>
+    <p class="lead">The afternoon you asked for, mapped to the clock. Skips Wall Drug; keeps Mount Rushmore. Trail times are moving-plus-photos estimates.</p>
+    <div class="plan">
+
+      <div class="drive"><div class="arrow">1:00 PM</div><div class="d"><b>Drive</b> to Badlands — ~1 hr (you're an hour out)</div></div>
+
+      <div class="leg"><div class="when">2:00 PM</div>
+        <div class="c2"><img src="qa/big_badlands.jpg" loading="lazy" alt="Badlands">
+          <div class="txt"><div class="dur">~10 min stop</div><h4>Arrive Badlands · Cedar Pass</h4>
+            <p>Enter the NE gate; quick stop at Ben Reifel Visitor Center for restrooms and a park map before the trails.</p></div></div></div>
+
+      <div class="leg"><div class="when">2:15 PM</div>
+        <div class="c2"><img src="user/badlands-door-trail.jpg" loading="lazy" alt="Door Trail">
+          <div class="txt"><div class="dur">0.75 mi · ~25 min · easy</div><h4>Door Trail</h4>
+            <p>Flat boardwalk that drops you through "the Door" straight into the eroded Badlands Wall. Quick and dramatic.</p></div></div></div>
+
+      <div class="leg"><div class="when">2:40 PM</div>
+        <div class="c2"><img src="qa/notch.jpg" loading="lazy" alt="Notch Trail">
+          <div class="txt"><div class="dur">1.5 mi · ~1 hr · moderate</div><h4>Notch Trail</h4>
+            <p>The fun one — climb a log-and-rope ladder, follow a canyon ledge to "the Notch" for a window view over the White River valley. Skip in wet/slick conditions.</p></div></div></div>
+
+      <div class="leg"><div class="when">3:45 PM</div>
+        <div class="c2"><img src="qa/yellow_mounds.jpg" loading="lazy" alt="Badlands Loop Road">
+          <div class="txt"><div class="dur">~1.5 hr · scenic drive</div><h4>Badlands Loop Road (SD-240)</h4>
+            <p>Drive west with overlook hops: Big Badlands → Panorama Point → Yellow Mounds → Pinnacles. Exit at the Pinnacles gate.</p></div></div></div>
+
+      <div class="drive"><div class="arrow">5:15 PM</div><div class="d"><b>Drive</b> Pinnacles → Mount Rushmore — ~1 hr 20 min</div></div>
+
+      <div class="leg"><div class="when">6:35 PM</div>
+        <div class="c2"><img src="qa/rushmore.jpg" loading="lazy" alt="Mount Rushmore">
+          <div class="txt"><div class="dur">~40 min · ~$10 parking</div><h4>Mount Rushmore</h4>
+            <p>The four faces, well-lit in evening light. Note: the federal pass doesn't cover Rushmore — you pay ~$10 to park (receipt good all year).</p></div></div></div>
+
+      <div class="drive"><div class="arrow">7:15 PM</div><div class="d"><b>Drive</b> Rushmore → Devils Tower — ~2 hr 30 min</div></div>
+
+      <div class="leg"><div class="when">9:45 PM</div>
+        <div class="c2"><img src="schedule/devils-tower.jpg" loading="lazy" alt="Devils Tower at sunset">
+          <div class="txt"><div class="dur">arrival · after dark</div><h4>Devils Tower</h4>
+            <p>America's first national monument — an 867-ft volcanic monolith. Covered by your $80 pass. You'll arrive under stars, not sunset (see below).</p></div></div></div>
+
+    </div>
+
+    <div class="warn">
+      <span class="wt">⚠ Heads-up: you won't catch Devils Tower by sunset</span>
+      With Rushmore in the plan you reach Devils Tower ~<b>9:45 PM</b> — roughly an hour past a summer sunset (~8:50 PM). The Rushmore detour south, then back northwest into Wyoming, is what eats the light — not Wall Drug.
+      <br><br>
+      <b>To catch the sunset instead:</b> drop Mount Rushmore and drive Badlands → Devils Tower directly (~2.5 hr from the Pinnacles gate). Leaving Badlands by ~6:00 PM puts you at the Tower ~8:30 PM, just in time. You can't do both Rushmore <em>and</em> a Devils Tower sunset in one afternoon.
+    </div>
   </div>
 </section>
 
